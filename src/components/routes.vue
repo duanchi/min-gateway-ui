@@ -140,6 +140,12 @@
                 </b-col>
               </div>
               <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="timeout">超时时间</label>
+                <b-col cols="4" sm="6">
+                  <input type="text" id="timeout" class="form-control" placeholder="超时时间, 为空默认" v-model="createRoute.timeout">
+                </b-col>
+              </div>
+              <div class="form-group row">
                 <label class="col-sm-2 col-form-label" for="match">路径重写</label>
                 <div class="col-10">
                   <b-row :key="index" v-for="(instance, index) in createRoute.rewrite" class="mb-2">
@@ -247,7 +253,8 @@ export default {
         authorize: false,
         isAuthRoute: false,
         authorize_prefix: 'AUTH',
-        authorize_type_key: 'HEADER:X-Authorize-Platform'
+        authorize_type_key: 'HEADER:X-Authorize-Platform',
+        timeout: 0
       },
       serviceList: [],
       routeList: [],
@@ -339,7 +346,7 @@ export default {
         this.createRoute.isAuthRoute = true
         this.createRoute.authorize = false
       } else {
-        this.authorize_type_key = ''
+        this.createRoute.authorize_type_key = ''
       }
 
       if (this.updateId !== '') {
@@ -392,7 +399,20 @@ export default {
     },
     getRouteIntoModal (index) {
       if (undefined !== this.routeList[index]) {
-        this.createRoute = this.routeList[index]
+        this.createRoute = {
+          url: {
+            match: this.routeList[index].url.match,
+            type: this.routeList[index].url.type
+          },
+          description: this.routeList[index].description,
+          timeout: this.routeList[index].timeout,
+          method: this.routeList[index].method,
+          rewrite: this.routeList[index].rewrite,
+          authorize: this.routeList[index].authorize,
+          isAuthRoute: this.routeList[index].isAuthRoute,
+          authorize_prefix: this.routeList[index].authorize_prefix,
+          authorize_type_key: this.routeList[index].authorize_type_key
+        }
         this.updateId = this.routeList[index].id
 
         if (this.createRoute.authorize === false && this.createRoute.authorize_type_key !== '') {

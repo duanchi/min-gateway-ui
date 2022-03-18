@@ -158,10 +158,7 @@ export default {
         display: '',
         load_balance: 'pool',
         instances: [''],
-        gray: [{
-          uri: '',
-          id: uuidv4()
-        }]
+        gray: []
       },
       serviceList: [],
       routeList: [],
