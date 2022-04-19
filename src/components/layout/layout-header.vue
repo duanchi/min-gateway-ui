@@ -7,10 +7,10 @@
       <div class="logo-box">
         <a href="/" class="logo text-center">
             <span class="logo-lg">
-              <span class="logo-lg-text-light">Heron Gateway</span>
+              <span class="logo-lg-text-light">Min Gateway</span>
             </span>
           <span class="logo-sm">
-              <span class="logo-sm-text-dark">Heron Gateway</span>
+              <span class="logo-sm-text-dark">Min Gateway</span>
             </span>
         </a>
       </div>

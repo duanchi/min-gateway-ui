@@ -9,7 +9,7 @@
 
               <div class="text-center w-75 m-auto">
                 <router-link to="/authorize">
-                  <span>HERON GATEWAY</span>
+                  <span>MIN GATEWAY</span>
                 </router-link>
                 <p class="text-muted mb-4 mt-3">请将AccessToken置入输入框进行认证</p>
               </div>

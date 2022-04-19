@@ -1,7 +1,7 @@
 <template>
   <div class="card-box">
     <h4 class="header-title">配置统计</h4>
-    <p class="text-muted">Heron-Gateway网关路由和微服务统计信息</p>
+    <p class="text-muted">Min Gateway网关路由和微服务统计信息</p>
 
     <b-row>
       <b-col cols="6">

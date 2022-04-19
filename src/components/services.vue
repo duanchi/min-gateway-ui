@@ -14,7 +14,7 @@
           <div class="page-title-box">
             <div class="page-title">
               <ol class="breadcrumb m-0">
-                <li class="breadcrumb-item"><a href="javascript: void(0);">Heron Gateway</a></li>
+                <li class="breadcrumb-item"><a href="javascript: void(0);">Min Gateway</a></li>
                 <li class="breadcrumb-item">配置</li>
                 <li class="breadcrumb-item active">微服务配置</li>
               </ol>
@@ -29,19 +29,17 @@
             <b-button class="float-right" variant="outline-primary" v-b-modal.modal-add-service><span><i class="mdi mdi-library-plus" /> 新增微服务</span></b-button>
             <h4 class="header-title">网关微服务列表</h4>
             <p class="sub-header mb-0">
-              所有Heron Gateway网关配置的微服务列表
+              所有Min Gateway网关配置的微服务列表
             </p>
           </div>
 
           <b-row>
             <b-col :key="index" v-for="(service, index) in serviceList" cols="12" xl="3" lg="3" md="4" sm="6">
               <div class="card-box p-3">
-                <h4 class="header-title">{{service.display}}</h4>
-                <p class="text-muted">{{service.name}}</p>
-                <footer v-if="service.description && service.description != ''" class="blockquote-footer">{{service.description}}</footer>
+                <h4 class="header-title">{{service.name}}</h4>
                 <h3 class="mb-1 mt-4"><span class="text-primary">{{service.instances.length || 0}}</span> 个实例</h3>
                 <template v-if="service.instances.length">
-                  <footer :key="index" v-for="(instance, index) in service.instances" class="blockquote-footer">{{instance}}</footer>
+                  <footer :key="index" v-for="(instance, index) in service.instances" class="blockquote-footer">{{instance.uri}}</footer>
                 </template>
                 <hr>
                 <b-row class="pt-1">
@@ -68,13 +66,7 @@
           <b-col cols="10" offset="1">
             <b-form class="form-horizontal">
               <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="display">服务名称</label>
-                <div class="col-sm-10">
-                  <input type="text" id="display" class="form-control" placeholder="微服务显示名称" v-model="createService.display">
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="name">应用名称</label>
+                <label class="col-sm-2 col-form-label" for="name">服务名称</label>
                 <div class="col-sm-10">
                   <input type="text" id="name" class="form-control" placeholder="微服务应用名称" v-model="createService.name">
                 </div>
@@ -86,7 +78,7 @@
                   <b-row :key="'instance-' + index" v-for="(instance, index) in createService.instances" class="mb-2">
                     <b-col cols="12">
                       <b-input-group>
-                        <input type="text" class="form-control" placeholder="http://" v-model="createService.instances[index]">
+                        <input type="text" class="form-control" placeholder="http://" v-model="createService.instances[index].uri">
                         <b-input-group-append>
                           <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
                         </b-input-group-append>
@@ -140,6 +132,7 @@
 </template>
 
 <script>
+import { Component, Vue } from 'vue-property-decorator'
 import LayoutHeader from './layout/layout-header'
 import services from '../services/services'
 import routes from '../services/routes'
@@ -147,121 +140,99 @@ import LayoutFooter from './layout/layout-footer'
 import SideReports from './side-reports'
 import { v4 as uuidv4 } from 'uuid'
 
-export default {
-  name: 'services',
-  components: { SideReports, LayoutFooter, LayoutHeader },
-  data () {
-    return {
-      updateId: '',
-      createService: {
-        name: '',
-        display: '',
-        load_balance: 'pool',
-        instances: [''],
-        gray: []
-      },
-      serviceList: [],
-      routeList: [],
-      servicesFields: [
-        {
-          key: 'index',
-          label: '#'
-        },
-        {
-          key: 'display',
-          label: '服务名称'
-        },
-        {
-          key: 'name',
-          label: '应用名称'
-        },
-        {
-          key: 'instances',
-          label: '服务实例'
-        },
-        {
-          key: 'options',
-          label: '',
-          class: 'text-right'
-        }
-      ]
-    }
-  },
-  methods: {
-    async getServicesItems () {
-      const serviceList = await services.getList()
-      this.serviceList = serviceList
-      console.log(serviceList)
-      return serviceList
-    },
-    getServiceIntoModal (index) {
-      if (undefined !== this.serviceList[index]) {
-        if (!this.serviceList[index].gray) {
-          this.serviceList[index].gray = [{
-            uri: '',
-            id: uuidv4()
-          }]
-        }
-        this.createService = this.serviceList[index]
-        this.updateId = this.serviceList[index].id
-      }
-    },
-    addInstancePlaceholder () {
-      this.createService.instances.push('')
-      this.$forceUpdate()
-    },
-    addGrayPlaceholder () {
-      this.createService.gray.push({
-        uri: '',
-        id: uuidv4()
-      })
-      this.$forceUpdate()
-    },
-    removeInstancePlaceholder (index) {
-      this.createService.instances.splice(index, 1)
-      this.$forceUpdate()
-    },
-    removeGrayPlaceholder (index) {
-      this.createService.gray.splice(index, 1)
-      this.$forceUpdate()
-    },
-    async createOrUpdate (callback) {
-      if (this.updateId !== '') {
-        await services.update(this.updateId, this.createService)
-      } else {
-        await services.create(this.createService)
-      }
-      callback()
-      this.updateId = ''
-      this.resetModal()
-      this.getServicesItems()
-    },
-    async remove (id) {
-      const value = await this.$bvModal.msgBoxConfirm('确认删除该微服务?', {
-        title: '确认删除微服务',
-        size: 'sm',
-        buttonSize: 'sm',
-        okVariant: 'danger',
-        okTitle: '确认删除',
-        cancelTitle: '取消',
-        footerClass: 'p-2',
-        hideHeaderClose: true,
-        centered: true
-      })
+export default
+@Component({
+  components: { SideReports, LayoutFooter, LayoutHeader }
+})
+class Services extends Vue {
+  updateId = ''
+  createService = {
+    name: '',
+    load_balance: 'pool',
+    instances: [
+      { uri: '', id: '' }
+    ],
+    gray: []
+  }
+  serviceList = []
+  routeList = []
 
-      if (value) {
-        services.remove(id).then(() => this.getServicesItems())
+  async getServicesItems () {
+    const serviceList = await services.getList()
+    this.serviceList = serviceList
+    return serviceList
+  }
+  getServiceIntoModal (index) {
+    if (undefined !== this.serviceList[index]) {
+      if (!this.serviceList[index].gray) {
+        this.serviceList[index].gray = [{
+          uri: '',
+          id: uuidv4()
+        }]
       }
-    },
-    resetModal () {
-      this.createService = {
-        name: '',
-        display: '',
-        load_balance: 'pool',
-        instances: ['']
-      }
+      this.createService = this.serviceList[index]
+      this.updateId = this.serviceList[index].id
     }
-  },
+  }
+  addInstancePlaceholder () {
+    this.createService.instances.push({ uri: '', id: '' })
+    this.$forceUpdate()
+  }
+  addGrayPlaceholder () {
+    this.createService.gray.push({
+      uri: '',
+      id: uuidv4()
+    })
+    this.$forceUpdate()
+  }
+  removeInstancePlaceholder (index) {
+    this.createService.instances.splice(index, 1)
+    this.$forceUpdate()
+  }
+  removeGrayPlaceholder (index) {
+    this.createService.gray.splice(index, 1)
+    this.$forceUpdate()
+  }
+  async createOrUpdate (callback) {
+    if (this.updateId !== '') {
+      await services.update(this.updateId, this.createService)
+    } else {
+      await services.create(this.createService)
+    }
+    callback()
+    this.updateId = ''
+    this.resetModal()
+    this.getServicesItems()
+  }
+  async remove (id) {
+    const value = await this.$bvModal.msgBoxConfirm('确认删除该微服务?', {
+      title: '确认删除微服务',
+      size: 'sm',
+      buttonSize: 'sm',
+      okVariant: 'danger',
+      okTitle: '确认删除',
+      cancelTitle: '取消',
+      footerClass: 'p-2',
+      hideHeaderClose: true,
+      centered: true
+    })
+
+    if (value) {
+      services.remove(id).then(() => this.getServicesItems())
+    }
+  }
+  resetModal () {
+    /* this.updateId = ''
+    this.createService = {
+      name: '',
+      load_balance: 'pool',
+      instances: [
+        { uri: '', id: '' }
+      ]
+    } */
+    window.location.reload()
+  }
+
   async mounted () {
     this.getServicesItems()
     this.routeList = await routes.getList()
