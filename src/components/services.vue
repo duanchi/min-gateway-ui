@@ -45,7 +45,8 @@
                 <b-row class="pt-1">
                   <b-col cols="12">
                     <b-button class="float-right" variant="outline-danger" size="sm" @click="remove(service.id)">删除</b-button>
-                    <b-button class="float-right mr-2" variant="outline-secondary" size="sm" @click="getServiceIntoModal(index);$bvModal.show('modal-add-service')">修改</b-button>
+                    <b-button class="float-right mr-2" variant="outline-secondary" size="sm" @click="getServiceIntoModal(index, 'edit');$bvModal.show('modal-add-service')">修改</b-button>
+                    <b-button class="float-right mr-2" variant="outline-secondary" size="sm" @click="getServiceIntoModal(index, 'view');$bvModal.show('modal-view-service')">查看</b-button>
                   </b-col>
                 </b-row>
               </div>
@@ -78,7 +79,7 @@
                   <b-row :key="'instance-' + index" v-for="(instance, index) in createService.instances" class="mb-2">
                     <b-col cols="12">
                       <b-input-group>
-                        <input type="text" class="form-control" placeholder="http://" v-model="createService.instances[index].uri">
+                        <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral" v-model="createService.instances[index].uri">
                         <b-input-group-append>
                           <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
                         </b-input-group-append>
@@ -99,7 +100,75 @@
                   <b-row :key="'gray-' + index" v-for="(gray, index) in createService.gray" class="mb-2">
                     <b-col cols="12">
                       <b-input-group :prepend="createService.gray[index].id">
-                        <input type="text" class="form-control" placeholder="http://" v-model="createService.gray[index].uri">
+                        <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral" v-model="createService.gray[index].uri">
+                        <b-input-group-append>
+                          <b-button variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
+                        </b-input-group-append>
+                      </b-input-group>
+                    </b-col>
+                  </b-row>
+                  <b-row>
+                    <b-col cols="12">
+                      <b-button variant="outline-primary" @click="addGrayPlaceholder()">添加实例</b-button>
+                    </b-col>
+                  </b-row>
+                </b-col>
+              </div>
+
+            </b-form>
+          </b-col>
+        </b-row>
+      </template>
+      <template v-slot:modal-footer="{ ok, cancel, hide }">
+        <!-- Emulate built in modal footer ok and cancel button actions -->
+        <b-button variant="success" @click="createOrUpdate(ok)">
+          {{updateId !== '' ? '确认修改' : '确认添加'}}
+        </b-button>
+        <b-button variant="link" @click="cancel();getServicesItems;resetModal()">
+          取消
+        </b-button>
+      </template>
+    </b-modal>
+    <b-modal id="modal-view-service" size="lg" title="查看微服务">
+      <template v-slot:default="{}">
+        <b-row>
+          <b-col cols="10" offset="1">
+            <b-form class="form-horizontal">
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">服务名称</label>
+                <div class="col-sm-10">
+                  <p class="form-control-plaintext">{{ viewService.name }}</p>
+                </div>
+              </div>
+              <hr>
+              <div class="form-group row">
+                <label class="col-2 col-form-label" for="instance">服务实例</label>
+                <b-col cols="10" id="instance">
+                  <b-row :key="'instance-' + index" v-for="(instance, index) in createService.instances" class="mb-2">
+                    <b-col cols="12">
+                      <b-input-group>
+                        <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral" v-model="createService.instances[index].uri">
+                        <b-input-group-append>
+                          <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
+                        </b-input-group-append>
+                      </b-input-group>
+                    </b-col>
+                  </b-row>
+                  <b-row>
+                    <b-col cols="12">
+                      <b-button variant="outline-primary" @click="addInstancePlaceholder()">添加实例</b-button>
+                    </b-col>
+                  </b-row>
+                </b-col>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-2 col-form-label" for="instance">灰度实例</label>
+                <b-col cols="10" id="gray">
+                  <b-row :key="'gray-' + index" v-for="(gray, index) in createService.gray" class="mb-2">
+                    <b-col cols="12">
+                      <b-input-group :prepend="createService.gray[index].id">
+                        <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral" v-model="createService.gray[index].uri">
                         <b-input-group-append>
                           <b-button variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
                         </b-input-group-append>
@@ -150,10 +219,20 @@ class Services extends Vue {
     name: '',
     load_balance: 'pool',
     instances: [
-      { uri: '', id: '' }
+      { uri: '', id: '', is_online: true, is_ephemeral: false }
     ],
     gray: []
   }
+
+  viewService = {
+    name: '',
+    load_balance: 'pool',
+    instances: [
+      { uri: '', id: '', is_online: true, is_ephemeral: false }
+    ],
+    gray: []
+  }
+
   serviceList = []
   routeList = []
 
@@ -162,20 +241,24 @@ class Services extends Vue {
     this.serviceList = serviceList
     return serviceList
   }
-  getServiceIntoModal (index) {
-    if (undefined !== this.serviceList[index]) {
-      if (!this.serviceList[index].gray) {
-        this.serviceList[index].gray = [{
-          uri: '',
-          id: uuidv4()
-        }]
+  getServiceIntoModal (index, type) {
+    if (type === 'view') {
+      this.viewService = this.serviceList[index]
+    } else {
+      if (undefined !== this.serviceList[index]) {
+        if (!this.serviceList[index].gray) {
+          this.serviceList[index].gray = [{
+            uri: '',
+            id: uuidv4()
+          }]
+        }
+        this.createService = this.serviceList[index]
+        this.updateId = this.serviceList[index].id
       }
-      this.createService = this.serviceList[index]
-      this.updateId = this.serviceList[index].id
     }
   }
   addInstancePlaceholder () {
-    this.createService.instances.push({ uri: '', id: '' })
+    this.createService.instances.push({ uri: '', id: '', is_online: true, is_ephemeral: false })
     this.$forceUpdate()
   }
   addGrayPlaceholder () {

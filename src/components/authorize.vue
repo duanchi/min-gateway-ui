@@ -45,7 +45,6 @@
 import { Component, Vue } from 'vue-property-decorator'
 import AuthorizeService from '../services/authorize'
 
-export default
 @Component
 class Login extends Vue {
   token = ''
@@ -57,4 +56,6 @@ class Login extends Vue {
     this.$router.push('/')
   }
 }
+
+export default Login
 </script>

@@ -17,17 +17,15 @@
 </template>
 
 <script>
-export default {
-  name: 'side-reports',
-  props: {
-    routesCount: {
-      type: Number,
-      default: 0
-    },
-    servicesCount: {
-      type: Number,
-      default: 0
-    }
-  }
+import { Component, Prop, Vue } from 'vue-property-decorator'
+
+@Component
+class SideReports extends Vue {
+  @Prop({ type: Number, default: 0 })
+  routesCount
+  @Prop({ type: Number, default: 0 })
+  servicesCount
 }
+
+export default SideReports
 </script>

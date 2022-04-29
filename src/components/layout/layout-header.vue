@@ -45,6 +45,9 @@
             <router-link to="/services" v-slot="{ href, route, navigate, isActive, isExactActive }">
               <li :class="['has-submenu', {'active': isActive}]"><a :class="{'active': isActive}" :href="href" @click="navigate"><i class="remixicon-stack-line"></i>服务配置</a></li>
             </router-link>
+            <router-link to="/integration" v-slot="{ href, route, navigate, isActive, isExactActive }">
+              <li :class="['has-submenu', {'active': isActive}]"><a :class="{'active': isActive}" :href="href" @click="navigate"><i class="remixicon-terminal-box-line"></i>接口集成</a></li>
+            </router-link>
           </ul>
           <!-- End navigation menu -->
 
@@ -64,7 +67,6 @@
 import { Vue, Component } from 'vue-property-decorator'
 import AuthorizeService from '../../services/authorize'
 
-export default
 @Component
 class LayoutHeader extends Vue {
   async checkAuthorize () {
@@ -81,4 +83,6 @@ class LayoutHeader extends Vue {
     this.$router.push('/authorize')
   }
 }
+
+export default LayoutHeader
 </script>
