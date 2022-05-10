@@ -79,6 +79,12 @@
                   <b-row :key="'instance-' + index" v-for="(instance, index) in createService.instances" class="mb-2">
                     <b-col cols="12">
                       <b-input-group>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">
+                            <i v-if="instance.is_ephemeral" class="remixicon-links-fill"></i>
+                            <i v-else class="remixicon-pencil-line"></i>
+                          </span>
+                        </b-input-group-prepend>
                         <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral" v-model="createService.instances[index].uri">
                         <b-input-group-append>
                           <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
@@ -99,7 +105,16 @@
                 <b-col cols="10" id="gray">
                   <b-row :key="'gray-' + index" v-for="(gray, index) in createService.gray" class="mb-2">
                     <b-col cols="12">
-                      <b-input-group :prepend="createService.gray[index].id">
+                      <b-input-group>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">
+                            <i v-if="gray.is_ephemeral" class="remixicon-links-fill"></i>
+                            <i v-else class="remixicon-pencil-line"></i>
+                          </span>
+                        </b-input-group-prepend>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">{{ createService.gray[index].id }}</span>
+                        </b-input-group-prepend>
                         <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral" v-model="createService.gray[index].uri">
                         <b-input-group-append>
                           <b-button variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
@@ -144,19 +159,17 @@
               <div class="form-group row">
                 <label class="col-2 col-form-label" for="instance">服务实例</label>
                 <b-col cols="10" id="instance">
-                  <b-row :key="'instance-' + index" v-for="(instance, index) in createService.instances" class="mb-2">
+                  <b-row :key="'instance-' + index" v-for="(instance, index) in viewService.instances" class="mb-2">
                     <b-col cols="12">
                       <b-input-group>
-                        <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral" v-model="createService.instances[index].uri">
-                        <b-input-group-append>
-                          <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
-                        </b-input-group-append>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">
+                            <i v-if="instance.is_ephemeral" class="remixicon-links-fill"></i>
+                            <i v-else class="remixicon-pencil-line"></i>
+                          </span>
+                        </b-input-group-prepend>
+                        <input type="text" class="form-control" disabled v-model="instance.uri">
                       </b-input-group>
-                    </b-col>
-                  </b-row>
-                  <b-row>
-                    <b-col cols="12">
-                      <b-button variant="outline-primary" @click="addInstancePlaceholder()">添加实例</b-button>
                     </b-col>
                   </b-row>
                 </b-col>
@@ -165,19 +178,20 @@
               <div class="form-group row">
                 <label class="col-2 col-form-label" for="instance">灰度实例</label>
                 <b-col cols="10" id="gray">
-                  <b-row :key="'gray-' + index" v-for="(gray, index) in createService.gray" class="mb-2">
+                  <b-row :key="'gray-' + index" v-for="(gray, index) in viewService.gray" class="mb-2">
                     <b-col cols="12">
-                      <b-input-group :prepend="createService.gray[index].id">
-                        <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral" v-model="createService.gray[index].uri">
-                        <b-input-group-append>
-                          <b-button variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
-                        </b-input-group-append>
+                      <b-input-group>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">
+                            <i v-if="gray.is_ephemeral" class="remixicon-links-fill"></i>
+                            <i v-else class="remixicon-pencil-line"></i>
+                          </span>
+                        </b-input-group-prepend>
+                        <b-input-group-prepend>
+                          <span class="input-group-text">{{ gray.id }}</span>
+                        </b-input-group-prepend>
+                        <input type="text" class="form-control" placeholder="http://" disabled v-model="createService.gray[index].uri">
                       </b-input-group>
-                    </b-col>
-                  </b-row>
-                  <b-row>
-                    <b-col cols="12">
-                      <b-button variant="outline-primary" @click="addGrayPlaceholder()">添加实例</b-button>
                     </b-col>
                   </b-row>
                 </b-col>
