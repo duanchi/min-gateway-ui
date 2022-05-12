@@ -276,10 +276,7 @@ class Services extends Vue {
     this.$forceUpdate()
   }
   addGrayPlaceholder () {
-    this.createService.gray.push({
-      uri: '',
-      id: uuidv4()
-    })
+    this.createService.gray.push({ uri: '', id: uuidv4(), is_online: true, is_ephemeral: false })
     this.$forceUpdate()
   }
   removeInstancePlaceholder (index) {
@@ -291,6 +288,15 @@ class Services extends Vue {
     this.$forceUpdate()
   }
   async createOrUpdate (callback) {
+    for (const n in this.createService.instances) {
+      this.createService.instances[n].is_online = true
+      this.createService.instances[n].is_ephemeral = false
+    }
+    for (const n in this.createService.gray) {
+      this.createService.gray[n].is_online = true
+      this.createService.gray[n].is_ephemeral = false
+    }
+
     if (this.updateId !== '') {
       await services.update(this.updateId, this.createService)
     } else {
