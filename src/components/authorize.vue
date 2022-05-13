@@ -15,13 +15,11 @@
               </div>
 
               <form action="#">
-
+                <div class="form-group mb-3">
+                  <b-input class="form-control" placeholder="网关URL" v-model="url" />
+                </div>
                 <div class="form-group mb-3">
                   <textarea class="form-control" id="access-token" rows="3" v-model="token" placeholder="ACCESS TOKEN可以在网关部署时的环境变量中获取"></textarea>
-                </div>
-                <div class="form-group form-check mb-3 text-center">
-                  <input type="checkbox" class="form-check-input" v-model="isRemember" id="remember">
-                  <label class="form-check-label" for="remember">记住授权</label>
                 </div>
 
                 <div class="form-group mb-0 text-center">
@@ -48,11 +46,13 @@ import AuthorizeService from '../services/authorize'
 @Component
 class Login extends Vue {
   token = ''
-
-  isRemember = false
+  url = ''
 
   authorize () {
-    AuthorizeService.setToken(this.token, this.isRemember)
+    const configs = {}
+    configs[this.url] = { token: this.token, url: this.url }
+    AuthorizeService.setConfig(configs)
+    localStorage.setItem('gateway-console-api-config-index', this.url)
     this.$router.push('/')
   }
 }

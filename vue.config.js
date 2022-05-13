@@ -1,6 +1,6 @@
 module.exports = {
   lintOnSave: false,
-  publicPath: '/',
+  publicPath: '/'/*,
   devServer: {
     proxy: {
       '/api': {
@@ -12,5 +12,5 @@ module.exports = {
         changeOrigin: true
       }
     }
-  }
+  } */
 }
