@@ -17,13 +17,29 @@ class Authorize extends Restful {
   }
 
   getToken () {
-    const isRemember = window.localStorage.getItem('gateway-console-api-remember-access-token')
-    return isRemember === 'true' ? window.localStorage.getItem('gateway-console-api-access-token') : window.sessionStorage.getItem('gateway-console-api-access-token')
+    /* const isRemember = window.localStorage.getItem('gateway-console-api-remember-access-token')
+    return isRemember === 'true' ? window.localStorage.getItem('gateway-console-api-access-token') : window.sessionStorage.getItem('gateway-console-api-access-token') */
+    return window.localStorage.getItem('gateway-console-api-access-token')
   }
 
   removeToken () {
     window.localStorage.removeItem('gateway-console-api-access-token')
     window.sessionStorage.removeItem('gateway-console-api-access-token')
+  }
+
+  setConfig (config) {
+    localStorage.setItem('gateway-console-api-configs', JSON.stringify(config))
+  }
+
+  parseConfig () {
+    let configs = {}
+    const configString = localStorage.getItem('gateway-console-api-configs')
+    if (configString !== '') {
+      try {
+        configs = JSON.parse(configString)
+      } catch (e) {}
+    }
+    return configs
   }
 
   @Request({

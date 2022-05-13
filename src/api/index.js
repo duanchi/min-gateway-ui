@@ -174,33 +174,6 @@ function cleanArray (actual) {
   return newArray
 }
 
-/* function getApiMethod (object) {
-  const properties = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(object))
-  const methods = {}
-  for (let n in properties) {
-    if (!n.startsWith('_') && n !== 'constructor' && util.typeof(properties[n].value) === 'function') {
-      methods[n] = properties[n].value
-    }
-  }
-  return methods
-} */
-
-/* function getExtendsMethod (methodName, target, last = false) {
-  if (target.constructor.name === 'Api') {
-    last = true
-  }
-  if (undefined === target[methodName]) {
-    if (last) {
-      return () => {
-      }
-    } else {
-      return getExtendsMethod(methodName, Object.getPrototypeOf(methodName), last)
-    }
-  } else {
-    return target[methodName]
-  }
-} */
-
 class Api {
   constructor (options) {
     options = options || {}

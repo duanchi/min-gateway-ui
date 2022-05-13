@@ -8,7 +8,7 @@ export default class Restful extends Api {
   }
 
   _setPrefix (prefix, parameters, values, options) {
-    return prefix
+    return prefix.replace('://', ':////')
   }
 
   _setPath (methodName, parameters, values, options) {
