@@ -168,7 +168,7 @@
                             <i v-else class="remixicon-pencil-line"></i>
                           </span>
                         </b-input-group-prepend>
-                        <input type="text" class="form-control" disabled v-model="instance.uri">
+                        <input type="text" class="form-control" disabled :value="instance.uri">
                       </b-input-group>
                     </b-col>
                   </b-row>
@@ -190,7 +190,7 @@
                         <b-input-group-prepend>
                           <span class="input-group-text">{{ gray.id }}</span>
                         </b-input-group-prepend>
-                        <input type="text" class="form-control" placeholder="http://" disabled v-model="createService.gray[index].uri">
+                        <input type="text" class="form-control" placeholder="http://" disabled :value="gray.uri">
                       </b-input-group>
                     </b-col>
                   </b-row>
