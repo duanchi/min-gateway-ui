@@ -81,13 +81,14 @@
                       <b-input-group>
                         <b-input-group-prepend>
                           <span class="input-group-text">
-                            <i v-if="instance.is_ephemeral" class="remixicon-links-fill"></i>
-                            <i v-else class="remixicon-pencil-line"></i>
+                            <i v-if="instance.is_ephemeral" v-b-tooltip.hover.top="'临时实例'" class="remixicon-links-fill"></i>
+                            <i v-else-if="instance.is_static" v-b-tooltip.hover.top="'静态实例'" class="remixicon-exchange-line"></i>
+                            <i v-else v-b-tooltip.hover.top="'手动实例'" class="remixicon-pencil-line"></i>
                           </span>
                         </b-input-group-prepend>
-                        <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral" v-model="createService.instances[index].uri">
+                        <input type="text" class="form-control" placeholder="http://" :disabled="instance.is_ephemeral || instance.is_static" v-model="createService.instances[index].uri">
                         <b-input-group-append>
-                          <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
+                          <b-button v-if="!instance.is_static" variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
                         </b-input-group-append>
                       </b-input-group>
                     </b-col>
@@ -108,16 +109,17 @@
                       <b-input-group>
                         <b-input-group-prepend>
                           <span class="input-group-text">
-                            <i v-if="gray.is_ephemeral" class="remixicon-links-fill"></i>
-                            <i v-else class="remixicon-pencil-line"></i>
+                            <i v-if="gray.is_ephemeral" v-b-tooltip.hover.top="'临时实例'" class="remixicon-links-fill"></i>
+                            <i v-else-if="gray.is_static" v-b-tooltip.hover.top="'静态实例'" class="remixicon-exchange-line"></i>
+                            <i v-else v-b-tooltip.hover.top="'手动实例'" class="remixicon-pencil-line"></i>
                           </span>
                         </b-input-group-prepend>
                         <b-input-group-prepend>
                           <span class="input-group-text">{{ createService.gray[index].id }}</span>
                         </b-input-group-prepend>
-                        <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral" v-model="createService.gray[index].uri">
+                        <input type="text" class="form-control" placeholder="http://" :disabled="gray.is_ephemeral || gray.is_static" v-model="createService.gray[index].uri">
                         <b-input-group-append>
-                          <b-button variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
+                          <b-button v-if="!gray.is_static" variant="outline-danger" @click="removeGrayPlaceholder(index)">删除</b-button>
                         </b-input-group-append>
                       </b-input-group>
                     </b-col>
@@ -164,8 +166,9 @@
                       <b-input-group>
                         <b-input-group-prepend>
                           <span class="input-group-text">
-                            <i v-if="instance.is_ephemeral" class="remixicon-links-fill"></i>
-                            <i v-else class="remixicon-pencil-line"></i>
+                            <i v-if="instance.is_ephemeral" v-b-tooltip.hover.top="'临时实例'" class="remixicon-links-fill"></i>
+                            <i v-else-if="instance.is_static" v-b-tooltip.hover.top="'静态实例'" class="remixicon-exchange-line"></i>
+                            <i v-else v-b-tooltip.hover.top="'手动实例'" class="remixicon-pencil-line"></i>
                           </span>
                         </b-input-group-prepend>
                         <input type="text" class="form-control" disabled :value="instance.uri">
@@ -183,8 +186,9 @@
                       <b-input-group>
                         <b-input-group-prepend>
                           <span class="input-group-text">
-                            <i v-if="gray.is_ephemeral" class="remixicon-links-fill"></i>
-                            <i v-else class="remixicon-pencil-line"></i>
+                            <i v-if="gray.is_ephemeral" v-b-tooltip.hover.top="'临时实例'" class="remixicon-links-fill"></i>
+                            <i v-else-if="gray.is_static" v-b-tooltip.hover.top="'静态实例'" class="remixicon-exchange-line"></i>
+                            <i v-else v-b-tooltip.hover.top="'手动实例'" class="remixicon-pencil-line"></i>
                           </span>
                         </b-input-group-prepend>
                         <b-input-group-prepend>
@@ -233,7 +237,7 @@ class Services extends Vue {
     name: '',
     load_balance: 'pool',
     instances: [
-      { uri: '', id: '', is_online: true, is_ephemeral: false }
+      { uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false }
     ],
     gray: []
   }
@@ -242,7 +246,7 @@ class Services extends Vue {
     name: '',
     load_balance: 'pool',
     instances: [
-      { uri: '', id: '', is_online: true, is_ephemeral: false }
+      { uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false }
     ],
     gray: []
   }
@@ -272,11 +276,11 @@ class Services extends Vue {
     }
   }
   addInstancePlaceholder () {
-    this.createService.instances.push({ uri: '', id: '', is_online: true, is_ephemeral: false })
+    this.createService.instances.push({ uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false })
     this.$forceUpdate()
   }
   addGrayPlaceholder () {
-    this.createService.gray.push({ uri: '', id: uuidv4(), is_online: true, is_ephemeral: false })
+    this.createService.gray.push({ uri: '', id: uuidv4(), is_online: true, is_ephemeral: false, is_static: false })
     this.$forceUpdate()
   }
   removeInstancePlaceholder (index) {
@@ -290,11 +294,13 @@ class Services extends Vue {
   async createOrUpdate (callback) {
     for (const n in this.createService.instances) {
       this.createService.instances[n].is_online = true
-      this.createService.instances[n].is_ephemeral = false
+      // this.createService.instances[n].is_ephemeral = false
+      // this.createService.instances[n].is_static = false
     }
     for (const n in this.createService.gray) {
       this.createService.gray[n].is_online = true
-      this.createService.gray[n].is_ephemeral = false
+      // this.createService.gray[n].is_ephemeral = false
+      // this.createService.instances[n].is_static = false
     }
 
     if (this.updateId !== '') {
