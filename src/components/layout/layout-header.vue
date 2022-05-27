@@ -22,9 +22,9 @@
           </a>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- item-->
-            <a v-for="(config, index) in configs" :key="`config-${index}`" href="javascript:void(0);" class="dropdown-item position-relative" @click="switchConfig(config.url)">
+            <a v-for="(config, index) in configs" :key="`config-${index}`" href="javascript:void(0);" class="dropdown-item position-relative" @click="switchConfig(config.url, true)">
               <span class="align-middle mr-3">{{ config.url }}</span>
-              <i class="fe-x position-absolute" style="right: .5rem; top: .625rem;" @click.stop="removeConfig(config.url)" />
+              <i class="fe-x position-absolute" style="right: .5rem; top: .625rem;" @click.stop="removeConfig(config.url, true)" />
             </a>
             <div class="dropdown-divider"></div>
             <!-- item-->
@@ -70,7 +70,7 @@
       <!-- end container -->
     </div>
     <!-- end navbar-custom -->
-    <b-modal id="modal-add-config" centered hide-footer>
+    <b-modal id="modal-add-config" centered hide-footer no-close-on-esc>
       <template #modal-title>新增网关配置</template>
       <template #default="{ hide }">
         <form class="p-4" action="#">
@@ -82,7 +82,7 @@
             <textarea class="form-control" rows="3" v-model="createConfig.token" placeholder="ACCESS TOKEN可以在网关部署时的环境变量中获取"></textarea>
           </div>
           <div class="form-group mb-0 text-center form-row">
-            <b-col cols="6"><button class="btn btn-primary btn-block" @click.prevent="addConfig"> 确定 </button></b-col>
+            <b-col cols="6"><button class="btn btn-primary btn-block" @click.prevent="addConfig(hide)"> 确定 </button></b-col>
             <b-col cols="6"><button class="btn btn-outline-primary btn-block" @click.prevent="hide"> 关闭 </button></b-col>
           </div>
         </form>
@@ -121,7 +121,7 @@ class LayoutHeader extends Vue {
     this.$router.push('/authorize')
   }
 
-  addConfig () {
+  addConfig (callback) {
     if (this.createConfig.url !== '') {
       this.configs[this.createConfig.url] = {
         url: this.createConfig.url,
@@ -135,6 +135,8 @@ class LayoutHeader extends Vue {
         token: ''
       }
     }
+
+    callback()
   }
 
   saveConfig () {
@@ -142,18 +144,17 @@ class LayoutHeader extends Vue {
     localStorage.setItem('gateway-console-api-config-index', this.currentConfigIndex)
   }
 
-  removeConfig (url) {
+  removeConfig (url, isClick = false) {
     delete this.configs[url]
     this.saveConfig()
-    console.log(Object.keys(this.configs))
     if (Object.keys(this.configs).length > 0) {
-      this.switchConfig(Object.keys(this.configs)[0])
+      this.switchConfig(Object.keys(this.configs)[0], isClick)
     } else {
       this.$router.push('/authorize')
     }
   }
 
-  switchConfig (url) {
+  switchConfig (url, isClick = false) {
     if (this.configs[url]) {
       this.currentConfigIndex = url
       localStorage.setItem('gateway-console-api-config-index', this.currentConfigIndex)
@@ -174,6 +175,10 @@ class LayoutHeader extends Vue {
           }
         } */
       })
+
+      if (isClick) {
+        window.location.reload()
+      }
     }
   }
 
