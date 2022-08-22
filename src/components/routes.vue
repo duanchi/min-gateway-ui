@@ -100,117 +100,181 @@
     <layout-footer />
     <b-modal id="modal-add-route" size="lg" title="新增路由">
       <template v-slot:default="{}">
+        <ul class="nav nav-tabs nav-bordered">
+          <li class="nav-item">
+            <a href="#tab-basic" data-toggle="tab" aria-expanded="false" class="nav-link active">
+              <span class="d-inline-block d-sm-none"><i class="fas fa-home"></i></span>
+              <span class="d-none d-sm-inline-block">基础配置</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#tab-authorize" data-toggle="tab" aria-expanded="true" class="nav-link">
+              <span class="d-inline-block d-sm-none"><i class="far fa-user"></i></span>
+              <span class="d-none d-sm-inline-block">授权配置</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#tab-controll" data-toggle="tab" aria-expanded="false" class="nav-link">
+              <span class="d-inline-block d-sm-none"><i class="far fa-envelope"></i></span>
+              <span class="d-none d-sm-inline-block">控制配置</span>
+            </a>
+          </li>
+        </ul>
         <b-row>
           <b-col cols="10" offset="1">
             <b-form class="form-horizontal">
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="match">路由规则</label>
-                <div class="col-sm-10">
-                  <input type="text" id="match" class="form-control" placeholder="路由规则" v-model="createRoute.url.match">
+              <div class="tab-content">
+                <div class="tab-pane fade active show" id="tab-basic">
+                    <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="match">路由规则</label>
+                      <div class="col-sm-10">
+                        <input type="text" id="match" class="form-control" placeholder="路由规则" v-model="createRoute.url.match">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="type">匹配类型</label>
+                      <b-col cols="4" sm="6">
+                        <b-form-select id="type" v-model="createRoute.url.type" :options="MATCH_TYPE_OPTIONS"></b-form-select>
+                      </b-col>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="method">请求类型</label>
+                      <b-col cols="10">
+                        <b-form-group>
+                          <b-form-checkbox-group
+                            id="method"
+                            v-model="createRoute.method"
+                            :options="[
+                              { text: 'ALL', value: 'ALL' },
+                              { text: 'GET', value: 'GET' },
+                              { text: 'POST', value: 'POST' },
+                              { text: 'PUT', value: 'PUT' },
+                              { text: 'PATCH', value: 'PATCH' },
+                              { text: 'DEL', value: 'DELETE' },
+                              { text: 'HEAD', value: 'HEAD' },
+                              { text: 'OPTS', value: 'OPTIONS' },
+                              { text: 'WS', value: 'CONNECT' }
+                            ]"
+                            name="method"
+                            buttons
+                            button-variant="outline-primary"
+                            size="sm"
+                          ></b-form-checkbox-group>
+                        </b-form-group>
+                      </b-col>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="service">匹配服务</label>
+                      <b-col cols="6">
+                        <b-form-select id="service" v-model="createRoute.service_id" :options="serviceList"></b-form-select>
+                      </b-col>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="match">路径重写</label>
+                      <div class="col-10">
+                        <b-row :key="index" v-for="(instance, index) in createRoute.rewrite" class="mb-2">
+                          <b-col cols="12">
+                            <b-input-group>
+                              <b-form-input type="text" id="rewrite_key" class="form-control" placeholder="网关路径匹配" v-model="instance.key"></b-form-input>
+                              <b-form-input type="text" id="rewrite_value" class="form-control" placeholder="微服务路径重写" v-model="instance.value"></b-form-input>
+                              <b-input-group-append>
+                                <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
+                              </b-input-group-append>
+                            </b-input-group>
+                          </b-col>
+                        </b-row>
+                        <b-row>
+                          <b-col cols="12">
+                            <b-button variant="outline-primary" @click="addInstancePlaceholder()">添加重写规则</b-button>
+                          </b-col>
+                        </b-row>
+                      </div>
+                    </div>
                 </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="type">匹配类型</label>
-                <b-col cols="4" sm="6">
-                  <b-form-select id="type" v-model="createRoute.url.type" :options="MATCH_TYPE_OPTIONS"></b-form-select>
-                </b-col>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="method">请求类型</label>
-                <b-col cols="10">
-                  <b-form-group>
-                    <b-form-checkbox-group
-                      stacked
-                      id="method"
-                      v-model="createRoute.method"
-                      :options="['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'CONNECT', 'WEBSOCKET']"
-                      name="method"
-                      buttons
-                      button-variant="outline-primary"
-                      size="sm"
-                    ></b-form-checkbox-group>
-                  </b-form-group>
-                </b-col>
-              </div>
-              <hr>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="service">匹配服务</label>
-                <b-col cols="4" sm="6">
-                  <b-form-select id="service" v-model="createRoute.service_id" :options="serviceList"></b-form-select>
-                </b-col>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="timeout">超时时间</label>
-                <b-col cols="4" sm="6">
-                  <input type="text" id="timeout" class="form-control" placeholder="超时时间, 为空默认" v-model="createRoute.timeout">
-                </b-col>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="match">路径重写</label>
-                <div class="col-10">
-                  <b-row :key="index" v-for="(instance, index) in createRoute.rewrite" class="mb-2">
-                    <b-col cols="12">
-                      <b-input-group>
-                        <b-form-input type="text" id="rewrite_key" class="form-control" placeholder="网关路径匹配" v-model="instance.key"></b-form-input>
-                        <b-form-input type="text" id="rewrite_value" class="form-control" placeholder="微服务路径重写" v-model="instance.value"></b-form-input>
-                        <b-input-group-append>
-                          <b-button variant="outline-danger" @click="removeInstancePlaceholder(index)">删除</b-button>
-                        </b-input-group-append>
-                      </b-input-group>
+                <div class="tab-pane fade" id="tab-authorize">
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="authorize">需要授权</label>
+                    <b-col cols="4" sm="6">
+                      <b-form-group>
+                        <b-form-radio-group
+                          id="authorize"
+                          v-model="createRoute.authorize"
+                          :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}, {value:'authorize', text: '授权路由'}]"
+                          buttons
+                          button-variant="outline-primary"
+                          size="sm"
+                          name="authorize"
+                        ></b-form-radio-group>
+                      </b-form-group>
                     </b-col>
-                  </b-row>
-                  <b-row>
-                    <b-col cols="12">
-                      <b-button variant="outline-primary" @click="addInstancePlaceholder()">添加重写规则</b-button>
+                  </div>
+                  <div v-if="createRoute.authorize === 'authorize'" class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="authorize_key">授权类型字段</label>
+                    <div class="col-sm-8">
+                      <input type="text" id="authorize_key" class="form-control" v-model="createRoute.authorize_type_key" value="HEADER:X-Authorize-Platform">
+                      <p class="form-control-plaintext">QUERY:{query key}或HEADER:{header key}</p>
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="authorize_prefix">授权因子</label>
+                    <div class="col-sm-2">
+                      <input type="text" id="authorize_prefix" class="form-control" placeholder="AUTH" v-model="createRoute.authorize_prefix">
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="custom_token">自定义授权</label>
+                    <b-col cols="4" sm="6">
+                      <b-form-group>
+                        <b-form-radio-group
+                          id="custom_token"
+                          v-model="createRoute.custom_token"
+                          :options="[{value:false, text:'使用默认JWT'}, {value:true, text:'自定义'}]"
+                          buttons
+                          button-variant="outline-primary"
+                          size="sm"
+                          name="custom_token"
+                        ></b-form-radio-group>
+                      </b-form-group>
                     </b-col>
-                  </b-row>
+                  </div>
                 </div>
-              </div>
-              <hr>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="authorize">需要授权</label>
-                <b-col cols="4" sm="6">
-                  <b-form-group>
-                    <b-form-radio-group
-                      id="authorize"
-                      v-model="createRoute.authorize"
-                      :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}, {value:'authorize', text: '授权路由'}]"
-                      buttons
-                      button-variant="outline-primary"
-                      size="sm"
-                      name="authorize"
-                    ></b-form-radio-group>
-                  </b-form-group>
-                </b-col>
-              </div>
-              <div v-if="createRoute.authorize === 'authorize'" class="form-group row">
-                <label class="col-sm-2 col-form-label" for="authorize_key">授权类型字段</label>
-                <div class="col-sm-8">
-                  <input type="text" id="authorize_key" class="form-control" v-model="createRoute.authorize_type_key" value="HEADER:X-Authorize-Platform">
-                  <p class="form-control-plaintext">QUERY:{query key}或HEADER:{header key}</p>
+                <div class="tab-pane fade" id="tab-controll">
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="service">蓝绿发布</label>
+                    <b-col cols="10" id="blue">
+                      <b-row class="mb-2">
+                        <b-col cols="5">
+                          <input type="text" id="tag-key" class="form-control" placeholder="Gateway-Data标识符" v-model="createRoute.blue_tag_key">
+                        </b-col>
+                      </b-row>
+                      <b-row :key="'blue-' + index" v-for="(blue, index) in createRoute.blue" class="mb-2">
+                        <b-col cols="12">
+                          <b-input-group>
+                            <b-input-group-prepend>
+                              <input type="text" class="form-control" placeholder="匹配符" v-model="createRoute.blue[index].tag">
+                              <!--                          <span class="input-group-text">{{ blue.tag }}</span>-->
+                            </b-input-group-prepend>
+                            <b-form-select id="service" v-model="createRoute.blue[index].service_id" :options="serviceList"></b-form-select>
+                            <b-input-group-append>
+                              <b-button variant="outline-danger" @click="removeBluePlaceholder(index)">删除</b-button>
+                            </b-input-group-append>
+                          </b-input-group>
+                        </b-col>
+                      </b-row>
+                      <b-row>
+                        <b-col cols="12">
+                          <b-button variant="outline-primary" @click="addBluePlaceholder()">添加服务</b-button>
+                        </b-col>
+                      </b-row>
+                    </b-col>
+                  </div>
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="timeout">超时时间</label>
+                    <b-col cols="2">
+                      <input type="text" id="timeout" class="form-control" placeholder="超时时间, 为空默认" v-model="createRoute.timeout">
+                    </b-col>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="authorize_prefix">授权因子</label>
-                <div class="col-sm-2">
-                  <input type="text" id="authorize_prefix" class="form-control" placeholder="AUTH" v-model="createRoute.authorize_prefix">
-                </div>
-              </div>
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label" for="custom_token">自定义授权</label>
-                <b-col cols="4" sm="6">
-                  <b-form-group>
-                    <b-form-radio-group
-                      id="custom_token"
-                      v-model="createRoute.custom_token"
-                      :options="[{value:false, text:'使用默认JWT'}, {value:true, text:'自定义'}]"
-                      buttons
-                      button-variant="outline-primary"
-                      size="sm"
-                      name="custom_token"
-                    ></b-form-radio-group>
-                  </b-form-group>
-                </b-col>
               </div>
             </b-form>
           </b-col>
@@ -256,7 +320,9 @@ class Routes extends Vue {
     authorize_prefix: 'AUTH',
     authorize_type_key: 'HEADER:X-Authorize-Platform',
     timeout: 0,
-    service_id: ''
+    service_id: '',
+    blue: [],
+    blue_tag_key: ''
   }
   serviceList = []
   routeList = []
@@ -386,7 +452,9 @@ class Routes extends Vue {
         authorize: this.routeList[index].authorize,
         custom_token: this.routeList[index].custom_token,
         authorize_prefix: this.routeList[index].authorize_prefix,
-        authorize_type_key: this.routeList[index].authorize_type_key
+        authorize_type_key: this.routeList[index].authorize_type_key,
+        blue: this.routeList[index].blue,
+        blue_tag_key: this.routeList[index].blue_tag_key
       }
       this.updateId = this.routeList[index].id
 
@@ -398,9 +466,20 @@ class Routes extends Vue {
   addInstancePlaceholder () {
     this.createRoute.rewrite.push({ key: '', value: '' })
   }
+
+  addBluePlaceholder () {
+    this.createRoute.blue.push({ tag: '', service_id: '' })
+  }
+
   removeInstancePlaceholder (index) {
     this.createRoute.rewrite.splice(index, 1)
   }
+
+  removeBluePlaceholder (index) {
+    this.createRoute.blue.splice(index, 1)
+    this.$forceUpdate()
+  }
+
   refresh () {
     routes.refresh()
   }

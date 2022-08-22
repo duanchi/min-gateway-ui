@@ -72,6 +72,18 @@
                   <input type="text" id="name" class="form-control" placeholder="微服务应用名称" v-model="createService.name">
                 </div>
               </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">服务集群</label>
+                <div class="col-sm-10">
+                  <input type="text" id="cluster" class="form-control" placeholder="DEFAULT" v-model="createService.cluster">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">服务分组</label>
+                <div class="col-sm-10">
+                  <input type="text" id="group" class="form-control" placeholder="DEFAULT_GROUP" v-model="createService.group">
+                </div>
+              </div>
               <hr>
               <div class="form-group row">
                 <label class="col-2 col-form-label" for="instance">服务实例</label>
@@ -157,6 +169,18 @@
                   <p class="form-control-plaintext">{{ viewService.name }}</p>
                 </div>
               </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">服务集群</label>
+                <div class="col-sm-10">
+                  <p class="form-control-plaintext">{{ viewService.cluster }}</p>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">服务分组</label>
+                <div class="col-sm-10">
+                  <p class="form-control-plaintext">{{ viewService.group }}</p>
+                </div>
+              </div>
               <hr>
               <div class="form-group row">
                 <label class="col-2 col-form-label" for="instance">服务实例</label>
@@ -231,6 +255,8 @@ class Services extends Vue {
   updateId = ''
   createService = {
     name: '',
+    cluster: 'DEFAULT',
+    group: 'DEFAULT_GROUP',
     load_balance: 'pool',
     instances: [
       { uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false }
@@ -240,6 +266,8 @@ class Services extends Vue {
 
   viewService = {
     name: '',
+    cluster: 'DEFAULT',
+    group: 'DEFAULT_GROUP',
     load_balance: 'pool',
     instances: [
       { uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false }
@@ -258,6 +286,10 @@ class Services extends Vue {
   getServiceIntoModal (index, type) {
     if (type === 'view') {
       this.viewService = this.serviceList[index]
+      const serviceStack = this.parseServiceName(this.viewService.name)
+      this.viewService.group = serviceStack.group
+      this.viewService.cluster = serviceStack.cluster
+      this.viewService.name = serviceStack.name
     } else {
       if (undefined !== this.serviceList[index]) {
         if (!this.serviceList[index].gray) {
@@ -268,9 +300,35 @@ class Services extends Vue {
         }
         this.createService = this.serviceList[index]
         this.updateId = this.serviceList[index].id
+        const serviceStack = this.parseServiceName(this.createService.name)
+        this.createService.group = serviceStack.group
+        this.createService.cluster = serviceStack.cluster
+        this.createService.name = serviceStack.name
       }
     }
   }
+
+  parseServiceName (serviceName) {
+    let name = ''
+    let cluster = ''
+    let group = ''
+
+    const stack = serviceName.split('@@', 2)
+    if (stack.length === 2) {
+      const extra = stack[0].split('#', 2)
+      if (extra.length === 2) {
+        cluster = extra[0]
+        group = extra[1]
+      } else {
+        group = extra[0]
+      }
+      name = stack[1]
+    } else {
+      name = stack[0]
+    }
+    return { name, cluster, group }
+  }
+
   addInstancePlaceholder () {
     this.createService.instances.push({ uri: '', id: '', is_online: true, is_ephemeral: false, is_static: false })
     this.$forceUpdate()
@@ -288,6 +346,9 @@ class Services extends Vue {
     this.$forceUpdate()
   }
   async createOrUpdate (callback) {
+    this.createService.name = this.createService.cluster + '#' + this.createService.group + '@@' + this.createService.name
+    delete this.createService.group
+    delete this.createService.cluster
     for (const n in this.createService.instances) {
       this.createService.instances[n].is_online = true
       // this.createService.instances[n].is_ephemeral = false
